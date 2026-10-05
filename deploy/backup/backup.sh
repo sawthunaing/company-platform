@@ -12,13 +12,18 @@ DIR=${BACKUP_DIR:-/backups}
 UPLOADS=${UPLOADS_DIR:-/uploads}
 KEEP_DAYS=${BACKUP_KEEP_DAYS:-7}
 REMOTE_KEEP_DAYS=${BACKUP_REMOTE_KEEP_DAYS:-30}
-STAMP=$(date -u +%Y%m%dT%H%M%SZ)
-DB_FILE="$DIR/db-$STAMP-$LABEL.dump"
-UPLOADS_FILE="$DIR/uploads-$STAMP-$LABEL.tar.gz"
-
 log() { echo "$(date -u +%FT%TZ) backup: $*"; }
 
 mkdir -p "$DIR"
+
+# Never overwrite: two runs in the same second wait for the next second.
+while :; do
+  STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+  DB_FILE="$DIR/db-$STAMP-$LABEL.dump"
+  UPLOADS_FILE="$DIR/uploads-$STAMP-$LABEL.tar.gz"
+  [ -e "$DB_FILE" ] || [ -e "$UPLOADS_FILE" ] || break
+  sleep 1
+done
 
 # Write to .partial first, so a failed run never leaves a file that looks complete.
 pg_dump --format=custom --file="$DB_FILE.partial"
