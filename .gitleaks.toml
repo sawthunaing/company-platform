@@ -1,0 +1,10 @@
+# Secret scan: gitleaks detect --source . --log-opts=--all (also run in CI on every PR).
+# Default rules, plus an allowlist for fixed values that are not credentials.
+# Add to it only with a reason, and only exact values, never whole paths.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "JWT secret used only by the API test run (api/test/global-setup.ts)"
+regexTarget = "match"
+regexes = ['''test-secret-that-is-at-least-32-characters-long''']

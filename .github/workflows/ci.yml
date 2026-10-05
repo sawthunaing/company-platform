@@ -1,0 +1,95 @@
+# Tests for every pull request. deploy.yml runs the same workflow before a deploy.
+# Branch protection on main should require the "ci" job.
+name: ci
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+# A new push to a PR cancels its older run. Runs called by deploy.yml are never cancelled.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.28.0 detect --source /repo --log-opts=--all --redact -v
+
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  backoffice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backoffice/package-lock.json
+      - run: npm ci --prefix backoffice
+      - run: npm test --prefix backoffice
+      - run: npm run build --prefix backoffice
+      - name: e2e (against the API in the dev Compose stack)
+        run: |
+          docker compose up -d --build --wait
+          curl -fsS --retry 30 --retry-all-errors --retry-delay 2 http://localhost:3000/health
+          npx --prefix backoffice playwright install --with-deps chromium
+          npm run e2e --prefix backoffice
+      - if: failure()
+        run: docker compose logs api
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci --prefix website
+      - run: npm run typecheck --prefix website
+      - run: npm test --prefix website
+      - run: npx --prefix website playwright install --with-deps chromium
+      - run: npm run e2e --prefix website
+
+  deploy-stack:
+    name: production stack (smoke, backup and restore)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: deploy/test/backup-restore.sh
+      - run: deploy/test/smoke.sh
+
+  # One check for branch protection: passes only when every job above passed.
+  ci:
+    if: always()
+    needs: [secrets, api, backoffice, website, deploy-stack]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = false

@@ -1,0 +1,41 @@
+# Public entry point: HTTPS for the three hosts, certificates from Let's Encrypt.
+# DOMAIN and ACME_EMAIL come from the server .env. CADDY_LOCAL_CERTS is empty in
+# production; the local smoke test sets it to "local_certs" (Caddy's own CA).
+{
+	email {$ACME_EMAIL}
+	{$CADDY_LOCAL_CERTS}
+}
+
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	log
+}
+
+{$DOMAIN} {
+	redir https://www.{$DOMAIN}{uri} permanent
+}
+
+www.{$DOMAIN} {
+	import common
+	header X-Frame-Options "SAMEORIGIN"
+	reverse_proxy website:3000
+}
+
+admin.{$DOMAIN} {
+	import common
+	# The staff app must never be framed (clickjacking). Moved here from S-2.
+	header Content-Security-Policy "frame-ancestors 'none'"
+	header X-Frame-Options "DENY"
+	reverse_proxy backoffice:80
+}
+
+api.{$DOMAIN} {
+	import common
+	reverse_proxy api:3000
+}
