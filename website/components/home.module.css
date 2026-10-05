@@ -1,0 +1,172 @@
+.container {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.narrow {
+  max-width: 48rem;
+}
+
+/* Hero */
+.hero {
+  background: var(--brand-dark);
+  color: var(--on-dark);
+  padding-block: 3.5rem;
+}
+
+.heroInner {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+.heroText h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.lead {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  color: var(--on-dark-muted);
+  max-width: 36rem;
+}
+
+.heroImage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.heroImage img {
+  object-fit: cover;
+}
+
+/* Services */
+.services {
+  list-style: none;
+  display: grid;
+  gap: 1.25rem;
+  padding-block: 3.5rem;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background: var(--surface);
+}
+
+.card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.card p + p,
+.about p + p {
+  margin-top: 0.75rem;
+}
+
+.card p {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* About */
+.about {
+  background: var(--surface-alt);
+  padding-block: 3.5rem;
+}
+
+.about h2,
+.contact h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.about p {
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
+}
+
+/* Contact */
+.contact {
+  padding-block: 3.5rem;
+}
+
+.contactList {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.contactList dt {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.contactList dd {
+  margin-top: 0.25rem;
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
+}
+
+.address {
+  white-space: pre-line;
+}
+
+/* Footer */
+.footer {
+  background: var(--brand-dark);
+  color: var(--on-dark-muted);
+  padding-block: 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.footerInner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  justify-content: space-between;
+}
+
+.footer a {
+  color: var(--on-dark);
+}
+
+.placeholder {
+  padding-block: 6rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding-block: 5rem;
+  }
+
+  .heroInner:has(.heroImage) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .services {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contactList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .services {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
