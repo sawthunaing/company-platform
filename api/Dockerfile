@@ -12,6 +12,8 @@ WORKDIR /app
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+# Owned by node so a fresh named volume mounted here is writable.
+RUN mkdir uploads && chown node:node uploads
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
