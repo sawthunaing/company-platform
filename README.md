@@ -50,11 +50,36 @@ npm run lighthouse
 `npm run e2e` takes about 3 minutes: two tests wait out the 60-second refresh. `npm run lighthouse` runs a mobile audit 3 times and fails when the median Performance, Accessibility or SEO score is below 90. Its reports go to `website/lighthouse/`.
 
 ## API tests
+## Backoffice
 
-Needs Docker (the tests start their own Postgres).
+The staff app for editing the home page. Start the API first (`docker compose up`), then:
 
 ```sh
-cd api
+cd backoffice
 npm install
-npm test
+npm run dev
+```
+
+Open http://localhost:5173 and log in with a staff user. To use another API, copy `backoffice/.env.example` to `backoffice/.env.local`.
+
+## Tests
+
+API tests need Docker (they start their own Postgres):
+
+```sh
+npm test --prefix api
+```
+
+Backoffice unit tests (no API needed):
+
+```sh
+npm test --prefix backoffice
+```
+
+Backoffice end-to-end tests run in a real browser against the running API. They create the user `e2e-staff@company.com` and restore the home content afterwards:
+
+```sh
+docker compose up -d --build
+npx --prefix backoffice playwright install chromium
+npm run e2e --prefix backoffice
 ```

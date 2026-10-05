@@ -1,11 +1,12 @@
-import { INestApplication, RequestMethod, ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { Env } from './config/env';
 
 // Shared by main.ts and the tests, so tests run the same app as production.
-export function configureApp(app: INestApplication): void {
+export function configureApp(app: NestExpressApplication): void {
   const config = app.get<ConfigService<Env, true>>(ConfigService);
 
   app.useLogger(app.get(Logger));
@@ -17,6 +18,16 @@ export function configureApp(app: INestApplication): void {
       .split(',')
       .map((o) => o.trim())
       .filter(Boolean),
+  });
+
+  // Uploaded files have random names, so they never change and can be cached for good.
+  app.useStaticAssets(config.get('UPLOADS_DIR', { infer: true }), {
+    prefix: '/uploads/',
+    index: false,
+    dotfiles: 'deny',
+    immutable: true,
+    maxAge: '365d',
+    setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
   });
 
   const doc = new DocumentBuilder()

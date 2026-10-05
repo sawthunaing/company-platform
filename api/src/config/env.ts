@@ -26,6 +26,11 @@ export class Env {
   @IsOptional()
   @IsString()
   LOG_LEVEL = 'info';
+
+  // Where uploaded images are stored. Served at /uploads.
+  @IsOptional()
+  @IsString()
+  UPLOADS_DIR = 'uploads';
 }
 
 export function validateEnv(raw: Record<string, unknown>): Env {
