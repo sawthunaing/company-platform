@@ -17,3 +17,10 @@ Where things live:
 - Workspace: `STN`
 - Epics: `Company Platform v1 — Launch to Production>`
 - Labels: one `type` label for each ticket (`bug`, `feature`, `chore`, `tech-debt`).
+
+
+## Git workflow
+- One branch per ticket, named <ticket-key>-<short-name> (e.g. s-2-backoffice), created from the latest main.
+- Never commit directly to main.
+- When the checklist is done, push the branch and open a PR to main, then record the branch and PR URL on the ticket and move it to In Review.
+- I am on Windows PowerShell 5.1: give me commands one per line, no &&.
