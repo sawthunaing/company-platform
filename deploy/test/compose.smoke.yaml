@@ -1,0 +1,11 @@
+# Added on top of compose.prod.yaml by smoke.sh only. With DOMAIN=localhost the
+# website must reach https://api.localhost through Caddy, not its own loopback,
+# and trust Caddy's local CA (copied out of the Caddy container by smoke.sh).
+services:
+  website:
+    extra_hosts:
+      - "api.localhost:host-gateway"
+    environment:
+      NODE_EXTRA_CA_CERTS: /caddy-root.crt
+    volumes:
+      - ${SMOKE_CA_FILE:?set by smoke.sh}:/caddy-root.crt:ro

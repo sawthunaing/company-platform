@@ -1,0 +1,2 @@
+# Daily at 02:00 in the container's TZ (set in the server .env). Output goes to `docker compose logs backup`.
+0 2 * * * /usr/local/bin/backup.sh daily > /proc/1/fd/1 2>&1

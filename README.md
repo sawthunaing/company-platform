@@ -49,7 +49,23 @@ npm run lighthouse
 
 `npm run e2e` takes about 3 minutes: two tests wait out the 60-second refresh. `npm run lighthouse` runs a mobile audit 3 times and fails when the median Performance, Accessibility or SEO score is below 90. Its reports go to `website/lighthouse/`.
 
-## API tests
+## Production
+
+One server runs everything with Docker Compose (`deploy/compose.prod.yaml`). Caddy serves `www.<domain>` (website), `admin.<domain>` (backoffice) and `api.<domain>` (API) over HTTPS with Let's Encrypt certificates.
+
+- **Deploys:** every merge to `main` runs all tests (`.github/workflows/ci.yml`), builds the images into GHCR, then runs `deploy/deploy.sh <commit>` on the server. If any test fails, nothing is deployed. If the new version does not become healthy, `deploy.sh` rolls back to the previous one.
+- **Backups:** the `backup` service dumps the database and the uploaded images daily at 02:00, keeps 7 days, and can copy them off the server.
+- **Secrets:** they live only in `/opt/company-platform/.env` on the server. See `deploy/.env.example` for the variables. CI runs gitleaks on every pull request.
+
+The runbook (server setup, deploy, rollback, restore) is the S-4 engineering document in DoneWhen.
+
+Test the production stack locally (needs Docker and free ports 80 and 443):
+
+```sh
+deploy/test/smoke.sh            # the whole stack over HTTPS with local certificates, plus a rollback
+deploy/test/backup-restore.sh   # backup, 7-day cleanup, restore into a fresh database
+```
+
 ## Backoffice
 
 The staff app for editing the home page. Start the API first (`docker compose up`), then:
