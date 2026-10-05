@@ -7,6 +7,7 @@ import { Env, validateEnv } from './config/env';
 import { ContentModule } from './content/content.module';
 import { dataSourceOptions } from './database/data-source';
 import { HealthController } from './health/health.controller';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { HealthController } from './health/health.controller';
     }),
     AuthModule,
     ContentModule,
+    UploadsModule,
   ],
   controllers: [HealthController],
 })
