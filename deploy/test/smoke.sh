@@ -45,6 +45,8 @@ cleanup() {
   if [[ -z ${KEEP:-} ]]; then
     "$DEPLOY" compose down -v --remove-orphans > /dev/null 2>&1 || true
   fi
+  # The backups are written by root inside the container.
+  docker run --rm -v "$WORK:/work" $REGISTRY/backup:good rm -rf /work/backups > /dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -103,6 +105,7 @@ title=$(curl_ api.localhost https://api.localhost/api/home | sed -n 's/.*"heroTi
 # The image was built with the API unreachable, so the first page is the placeholder
 # until ISR refreshes it (60 s after the build).
 eventually 90 "website shows the hero title from the API ($title)" page_has www.localhost / "<h1>$title</h1>"
+page_has www.localhost / "<h1>$title</h1>" || "$DEPLOY" compose logs --tail 30 website
 check "website sitemap uses https://www.localhost" page_has www.localhost /sitemap.xml '<loc>https://www.localhost/</loc>'
 check "backoffice serves the app" page_has admin.localhost / '<div id="root">'
 check "backoffice deep link → app (SPA fallback)" page_has admin.localhost /login '<div id="root">'

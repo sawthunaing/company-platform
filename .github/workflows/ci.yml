@@ -55,7 +55,7 @@ jobs:
       - name: e2e (against the API in the dev Compose stack)
         run: |
           docker compose up -d --build --wait
-          curl -fsS --retry 30 --retry-connrefused --retry-delay 2 http://localhost:3000/health
+          curl -fsS --retry 30 --retry-all-errors --retry-delay 2 http://localhost:3000/health
           npx --prefix backoffice playwright install --with-deps chromium
           npm run e2e --prefix backoffice
       - if: failure()
