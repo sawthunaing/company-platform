@@ -78,6 +78,7 @@ echo "== first deploy"
 TAG=good "$DEPLOY" compose up -d --no-deps caddy > /dev/null 2>&1
 for _ in $(seq 60); do TAG=good "$DEPLOY" compose exec -T caddy test -f /data/caddy/pki/authorities/local/root.crt && break; sleep 1; done
 TAG=good "$DEPLOY" compose cp caddy:/data/caddy/pki/authorities/local/root.crt "$WORK/root.crt" > /dev/null 2>&1
+chmod 644 "$WORK/root.crt" # a public certificate; the website runs as user node and must read it
 "$DEPLOY" good
 
 # --ssl-no-revoke: Windows curl (Schannel) cannot check revocation for a local CA; ignored elsewhere.
